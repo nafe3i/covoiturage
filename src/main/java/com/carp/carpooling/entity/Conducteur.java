@@ -2,9 +2,16 @@
 package com.carp.carpooling.entity;
 
 import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+import java.util.Set;
 
 @Entity
+@Getter
 @Table(name = "conducteurs")
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Conducteur {
 
     @Id
@@ -31,9 +38,6 @@ public class Conducteur {
     )
     private String numeroPermis;
 
-    protected Conducteur() {
-    }
-
     public Conducteur(String nom, String prenom, String email, String telephone, String numeroPermis) {
         this.nom = nom;
         this.prenom = prenom;
@@ -42,5 +46,4 @@ public class Conducteur {
         this.numeroPermis = numeroPermis;
     }
 
-    // Getters à ajouter pour accéder aux attributs.
 }
