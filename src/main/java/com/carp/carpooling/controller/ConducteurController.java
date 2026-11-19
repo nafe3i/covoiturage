@@ -1,12 +1,10 @@
 package com.carp.carpooling.controller;
 
 import com.carp.carpooling.dto.conducteur.*;
-import com.carp.carpooling.entity.Conducteur;
 import com.carp.carpooling.service.ConducteurService;
 
 import jakarta.validation.Valid;
 
-import lombok.Getter;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
