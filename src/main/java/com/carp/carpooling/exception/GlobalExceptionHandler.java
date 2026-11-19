@@ -11,6 +11,8 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.net.URI;
 import java.time.Clock;
@@ -155,5 +157,33 @@ public class GlobalExceptionHandler {
         problem.setProperty("path", request.getRequestURI());
 
         return ResponseEntity.status(status).body(problem);
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ProblemDetail> handleInvalidJson(
+            HttpMessageNotReadableException ex,
+            HttpServletRequest request) {
+
+        log.warn("Corps de requête JSON invalide");
+
+        return buildProblem(
+                HttpStatus.BAD_REQUEST,
+                "Le corps JSON de la requête est invalide",
+                request
+        );
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ProblemDetail> handleInvalidParameter(
+            MethodArgumentTypeMismatchException ex,
+            HttpServletRequest request) {
+
+        log.warn("Paramètre invalide : {}", ex.getName());
+
+        return buildProblem(
+                HttpStatus.BAD_REQUEST,
+                "Valeur invalide pour le paramètre : " + ex.getName(),
+                request
+        );
     }
 }
