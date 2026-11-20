@@ -2,11 +2,10 @@
 package com.carp.carpooling.entity;
 
 import jakarta.persistence.*;
+
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.util.Set;
 
 @Entity
 @Getter
@@ -38,7 +37,14 @@ public class Conducteur {
     )
     private String numeroPermis;
 
-    public Conducteur(String nom, String prenom, String email, String telephone, String numeroPermis) {
+
+    public Conducteur(
+            String nom,
+            String prenom,
+            String email,
+            String telephone,
+            String numeroPermis) {
+
         this.nom = nom;
         this.prenom = prenom;
         this.email = email;
@@ -46,4 +52,17 @@ public class Conducteur {
         this.numeroPermis = numeroPermis;
     }
 
+    public void modifierProfil(
+            String nom,
+            String prenom,
+            String email,
+            String telephone,
+            String numeroPermis) {
+
+        this.nom = nom;
+        this.prenom = prenom;
+        this.email = email;
+        this.telephone = telephone;
+        this.numeroPermis = numeroPermis;
+    }
 }

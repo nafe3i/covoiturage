@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.bind.MissingRequestHeaderException;
 
 import java.net.URI;
 import java.time.Clock;
@@ -64,7 +65,7 @@ public class GlobalExceptionHandler {
             BusinessConflictException ex,
             HttpServletRequest request) {
 
-        log.warn("Conflit métier : {}", ex.getMessage());
+        log.warn("Conflit metier : {}", ex.getMessage());
 
         return buildProblem(
                 HttpStatus.CONFLICT,
@@ -101,10 +102,10 @@ public class GlobalExceptionHandler {
                 .collect(Collectors.joining("; "));
 
         if (message.isBlank()) {
-            message = "Données de la requête invalides";
+            message = "Donnees de la requete invalides";
         }
 
-        log.warn("Validation refusée : {}", message);
+        log.warn("Validation refusee : {}", message);
 
         return buildProblem(
                 HttpStatus.BAD_REQUEST,
@@ -120,7 +121,7 @@ public class GlobalExceptionHandler {
 
         return buildProblem(
                 HttpStatus.BAD_REQUEST,
-                "Paramètre de requête invalide",
+                "Parametre de requete invalide",
                 request
         );
     }
@@ -168,7 +169,7 @@ public class GlobalExceptionHandler {
 
         return buildProblem(
                 HttpStatus.BAD_REQUEST,
-                "Le corps JSON de la requête est invalide",
+                "Le corps JSON de la requete est invalide",
                 request
         );
     }
@@ -178,11 +179,23 @@ public class GlobalExceptionHandler {
             MethodArgumentTypeMismatchException ex,
             HttpServletRequest request) {
 
-        log.warn("Paramètre invalide : {}", ex.getName());
+        log.warn("Parametre invalide : {}", ex.getName());
 
         return buildProblem(
                 HttpStatus.BAD_REQUEST,
-                "Valeur invalide pour le paramètre : " + ex.getName(),
+                "Valeur invalide pour le parametre : " + ex.getName(),
+                request
+        );
+    }
+
+    @ExceptionHandler(MissingRequestHeaderException.class)
+    public ResponseEntity<ProblemDetail> handleMissingHeader(
+            MissingRequestHeaderException ex,
+            HttpServletRequest request) {
+
+        return buildProblem(
+                HttpStatus.BAD_REQUEST,
+                "En-tete obligatoire manquant : " + ex.getHeaderName(),
                 request
         );
     }

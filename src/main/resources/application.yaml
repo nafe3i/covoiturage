@@ -11,6 +11,9 @@ spring:
     open-in-view: false
     hibernate:
       ddl-auto: validate
+    properties:
+      hibernate:
+        format_sql: true
 
   flyway:
     enabled: true
@@ -26,3 +29,6 @@ server:
 logging:
   level:
     org.flywaydb: INFO
+    org.springframework.web: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.orm.jdbc.bind: TRACE

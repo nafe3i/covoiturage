@@ -1,6 +1,8 @@
 package com.carp.carpooling.dto.conducteur;
 
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 public record ConducteurRequest(
 
@@ -12,5 +14,7 @@ public record ConducteurRequest(
 
         @NotBlank @Size(max = 30) String telephone,
 
-        @NotBlank @Size(max = 50) String numeroPermis) {
+        @NotBlank @Size(max = 50) String numeroPermis
+
+) {
 }
