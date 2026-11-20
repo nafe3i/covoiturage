@@ -5,6 +5,7 @@ import com.carp.carpooling.dto.passager.PassagerRequest;
 import com.carp.carpooling.dto.passager.PassagerResponse;
 import com.carp.carpooling.dto.passager.ReservationHistoriqueResponse;
 import com.carp.carpooling.entity.Passager;
+import com.carp.carpooling.exception.BusinessConflictException;
 import com.carp.carpooling.exception.ForbiddenOperationException;
 import com.carp.carpooling.exception.ResourceNotFoundException;
 import com.carp.carpooling.mapper.PassagerMapper;
@@ -42,14 +43,25 @@ public class PassagerServiceImpl implements PassagerService {
         this.mapper = mapper;
     }
 
+
     @Override
     @Transactional
     public PassagerResponse creer(PassagerRequest request) {
 
+        String email = normaliserEmail(request.email());
+
+        if (passagerRepository.existsByEmailIgnoreCase(email)) {
+            log.warn("Creation refusee : email deja utilise");
+
+            throw new BusinessConflictException(
+                    "Cet email est deja utilise"
+            );
+        }
+
         Passager passager = new Passager(
                 request.nom().trim(),
                 request.prenom().trim(),
-                normaliserEmail(request.email()),
+                email,
                 request.telephone().trim()
         );
 
@@ -59,6 +71,7 @@ public class PassagerServiceImpl implements PassagerService {
 
         return mapper.toResponse(saved);
     }
+
 
     @Override
     @Transactional(readOnly = true)
@@ -80,6 +93,7 @@ public class PassagerServiceImpl implements PassagerService {
         return mapper.toResponse(passager);
     }
 
+
     @Override
     @Transactional
     public PassagerResponse modifier(
@@ -91,21 +105,30 @@ public class PassagerServiceImpl implements PassagerService {
 
         Passager passager = trouverPassager(id);
 
+        String email = normaliserEmail(request.email());
+
+        if (passagerRepository.existsByEmailIgnoreCaseAndIdNot(
+                email, id)) {
+
+            log.warn("Modification refusee : email deja utilise");
+
+            throw new BusinessConflictException(
+                    "Cet email appartient deja a un autre passager"
+            );
+        }
+
         passager.modifierProfil(
                 request.nom().trim(),
                 request.prenom().trim(),
-                normaliserEmail(request.email()),
+                email,
                 request.telephone().trim()
         );
-
-        // L'entite est geree par Hibernate.
-        // Le dirty checking persiste les modifications
-        // lors du flush de la transaction.
 
         log.info("Profil passager modifie : id={}", id);
 
         return mapper.toResponse(passager);
     }
+
 
     @Override
     @Transactional(readOnly = true)
