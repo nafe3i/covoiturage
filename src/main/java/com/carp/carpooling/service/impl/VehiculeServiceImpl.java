@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
@@ -162,5 +163,26 @@ public class VehiculeServiceImpl implements VehiculeService {
 
         return vehiculeMapper.toResponse(vehicule);
     }
+
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<VehiculeResponse> listerParConducteur(
+            Long conducteurId) {
+
+        if (!conducteurRepository.existsById(conducteurId)) {
+            throw new ResourceNotFoundException(
+                    "Conducteur introuvable : " + conducteurId
+            );
+        }
+
+
+        return vehiculeRepository
+                .findAllByConducteurIdOrderByIdAsc(conducteurId)
+                .stream()
+                .map(vehiculeMapper::toResponse)
+                .toList();
+    }
+
 
 }

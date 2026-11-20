@@ -20,10 +20,10 @@ public interface VehiculeService {
             VehiculeUpdateRequest request
     );
     VehiculeResponse trouverParId(Long vehiculeId);
-//
-//    List<VehiculeResponse> listerParConducteur(
-//            Long conducteurId
-//    );
+
+    List<VehiculeResponse> listerParConducteur(
+            Long conducteurId
+    );
 //
 //
 //    void supprimer(
