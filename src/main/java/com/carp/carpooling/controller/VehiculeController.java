@@ -46,4 +46,16 @@ public class VehiculeController {
 
         return ResponseEntity.ok(response);
     }
+
+
+    @GetMapping("/{id}")
+    public ResponseEntity<VehiculeResponse> trouverParId(
+            @PathVariable Long id
+    ) {
+        VehiculeResponse response =
+                vehiculeService.trouverParId(id);
+
+        return ResponseEntity.ok(response);
+    }
+
 }

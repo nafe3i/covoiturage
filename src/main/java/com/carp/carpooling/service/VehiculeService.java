@@ -19,7 +19,7 @@ public interface VehiculeService {
             Long conducteurId,
             VehiculeUpdateRequest request
     );
-//    VehiculeResponse trouverParId(Long vehiculeId);
+    VehiculeResponse trouverParId(Long vehiculeId);
 //
 //    List<VehiculeResponse> listerParConducteur(
 //            Long conducteurId

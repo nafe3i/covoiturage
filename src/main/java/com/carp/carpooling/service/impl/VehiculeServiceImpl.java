@@ -48,7 +48,6 @@ public class VehiculeServiceImpl implements VehiculeService {
             Long conducteurId,
             VehiculeCreateRequest request) {
 
-        // R-07 : le conducteur doit exister
         Conducteur conducteur = conducteurRepository
                 .findById(conducteurId)
                 .orElseThrow(() ->
@@ -61,7 +60,6 @@ public class VehiculeServiceImpl implements VehiculeService {
                 .trim()
                 .toUpperCase(Locale.ROOT);
 
-        // R-05 : immatriculation unique
         if (vehiculeRepository
                 .existsByImmatriculationIgnoreCase(immatriculation)) {
 
@@ -147,6 +145,20 @@ public class VehiculeServiceImpl implements VehiculeService {
 
         log.info("Modification du vehicule effectuee dans la transaction : id={}",
                 vehiculeId);
+
+        return vehiculeMapper.toResponse(vehicule);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public VehiculeResponse trouverParId(Long vehiculeId) {
+
+        Vehicule vehicule = vehiculeRepository.findById(vehiculeId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Vehicule introuvable : " + vehiculeId
+                        )
+                );
 
         return vehiculeMapper.toResponse(vehicule);
     }
