@@ -4,7 +4,9 @@ package com.carp.carpooling.controller;
 import com.carp.carpooling.dto.conducteur.ConducteurRequest;
 import com.carp.carpooling.dto.conducteur.ConducteurResponse;
 import com.carp.carpooling.dto.conducteur.ConducteurUpdateRequest;
+import com.carp.carpooling.dto.vehicule.VehiculeResponse;
 import com.carp.carpooling.service.ConducteurService;
+import com.carp.carpooling.service.VehiculeService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,9 +19,11 @@ import java.util.List;
 public class ConducteurController {
 
     private final ConducteurService service;
+    private final VehiculeService vehiculeService;
 
-    public ConducteurController(ConducteurService service) {
+    public ConducteurController(ConducteurService service, VehiculeService vehiculeService) {
         this.service = service;
+        this.vehiculeService = vehiculeService;
     }
 
     // F-01 : Creer un conducteur
@@ -70,5 +74,15 @@ public class ConducteurController {
         return ResponseEntity.ok(
                 service.rechercher(name, email)
         );
+    }
+
+    @GetMapping("/{id}/vehicles")
+    public ResponseEntity<List<VehiculeResponse>> listerVehicules(
+            @PathVariable Long id) {
+
+        List<VehiculeResponse> vehicules =
+                vehiculeService.listerParConducteur(id);
+
+        return ResponseEntity.ok(vehicules);
     }
 }

@@ -50,4 +50,18 @@ public class Vehicule {
         this.capacite = capacite;
         this.conducteur = conducteur;
     }
+
+    public void modifierInformations(
+            String marque,
+            String modele,
+            String immatriculation,
+            String couleur,
+            Integer capacite) {
+
+        this.marque = marque;
+        this.modele = modele;
+        this.immatriculation = immatriculation;
+        this.couleur = couleur;
+        this.capacite = capacite;
+    }
 }
