@@ -3,9 +3,11 @@ package com.carp.carpooling.service.impl;
 
 import com.carp.carpooling.dto.vehicule.VehiculeCreateRequest;
 import com.carp.carpooling.dto.vehicule.VehiculeResponse;
+import com.carp.carpooling.dto.vehicule.VehiculeUpdateRequest;
 import com.carp.carpooling.entity.Conducteur;
 import com.carp.carpooling.entity.Vehicule;
 import com.carp.carpooling.exception.BusinessConflictException;
+import com.carp.carpooling.exception.ForbiddenOperationException;
 import com.carp.carpooling.exception.ResourceNotFoundException;
 import com.carp.carpooling.mapper.VehiculeMapper;
 import com.carp.carpooling.repository.ConducteurRepository;
@@ -18,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Locale;
+import java.util.Objects;
 
 @Service
 public class VehiculeServiceImpl implements VehiculeService {
@@ -90,4 +93,62 @@ public class VehiculeServiceImpl implements VehiculeService {
 
         return vehiculeMapper.toResponse(saved);
     }
+
+
+    @Override
+    @Transactional
+    public VehiculeResponse modifier(
+            Long vehiculeId,
+            Long conducteurId,
+            VehiculeUpdateRequest request) {
+
+        Vehicule vehicule = vehiculeRepository.findById(vehiculeId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Vehicule introuvable : " + vehiculeId
+                        )
+                );
+
+        if (!Objects.equals(
+                vehicule.getConducteur().getId(),
+                conducteurId)) {
+
+            log.warn("Modification refusee : vehicule={}, conducteur={}",
+                    vehiculeId, conducteurId);
+
+            throw new ForbiddenOperationException(
+                    "Ce vehicule ne vous appartient pas"
+            );
+        }
+
+        String immatriculation = request.immatriculation()
+                .trim()
+                .toUpperCase(Locale.ROOT);
+
+        if (vehiculeRepository
+                .existsByImmatriculationIgnoreCaseAndIdNot(
+                        immatriculation,
+                        vehiculeId)) {
+
+            log.warn("Modification refusee : immatriculation deja utilisee");
+
+            throw new BusinessConflictException(
+                    "Cette immatriculation est deja utilisee"
+            );
+        }
+
+        vehicule.modifierInformations(
+                request.marque().trim(),
+                request.modele().trim(),
+                immatriculation,
+                request.couleur().trim(),
+                request.capacite()
+        );
+
+        log.info("Modification du vehicule effectuee dans la transaction : id={}",
+                vehiculeId);
+
+        return vehiculeMapper.toResponse(vehicule);
+    }
+
 }
