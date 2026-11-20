@@ -3,6 +3,7 @@ package com.carp.carpooling.controller;
 
 import com.carp.carpooling.dto.vehicule.VehiculeCreateRequest;
 import com.carp.carpooling.dto.vehicule.VehiculeResponse;
+import com.carp.carpooling.dto.vehicule.VehiculeUpdateRequest;
 import com.carp.carpooling.service.VehiculeService;
 
 import jakarta.validation.Valid;
@@ -31,5 +32,18 @@ public class VehiculeController {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(response);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<VehiculeResponse> modifier(
+            @PathVariable Long id,
+            @RequestHeader("X-Driver-Id") Long driverId,
+            @Valid @RequestBody VehiculeUpdateRequest request
+    ) {
+
+        VehiculeResponse response =
+                vehiculeService.modifier(id, driverId, request);
+
+        return ResponseEntity.ok(response);
     }
 }
