@@ -1,0 +1,21 @@
+
+package com.carp.carpooling.repository;
+
+import com.carp.carpooling.entity.Passager;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.List;
+
+public interface PassagerRepository
+        extends JpaRepository<Passager, Long> {
+
+    List<Passager> findByEmailIgnoreCase(String email);
+
+    boolean existsByEmailIgnoreCase(String email);
+
+
+    boolean existsByEmailIgnoreCaseAndIdNot(
+            String email,
+            Long id
+    );
+}

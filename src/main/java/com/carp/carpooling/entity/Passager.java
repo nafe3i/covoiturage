@@ -39,4 +39,16 @@ public class Passager {
         this.email = email;
         this.telephone = telephone;
     }
+
+    public void modifierProfil(
+            String nom,
+            String prenom,
+            String email,
+            String telephone) {
+
+        this.nom = nom;
+        this.prenom = prenom;
+        this.email = email;
+        this.telephone = telephone;
+    }
 }
