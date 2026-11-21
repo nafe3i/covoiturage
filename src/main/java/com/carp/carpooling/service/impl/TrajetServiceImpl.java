@@ -8,11 +8,13 @@ import com.carp.carpooling.entity.Conducteur;
 import com.carp.carpooling.entity.PointArret;
 import com.carp.carpooling.entity.Trajet;
 import com.carp.carpooling.entity.Vehicule;
+import com.carp.carpooling.entity.enums.StatutReservation;
 import com.carp.carpooling.exception.ForbiddenOperationException;
 import com.carp.carpooling.exception.InvalidTrajetException;
 import com.carp.carpooling.exception.ResourceNotFoundException;
 import com.carp.carpooling.mapper.TrajetMapper;
 import com.carp.carpooling.repository.ConducteurRepository;
+import com.carp.carpooling.repository.ReservationRepository;
 import com.carp.carpooling.repository.TrajetRepository;
 import com.carp.carpooling.repository.VehiculeRepository;
 import com.carp.carpooling.service.TrajetService;
@@ -38,16 +40,22 @@ public class TrajetServiceImpl implements TrajetService {
     private final Clock clock;
     private final TrajetRepository trajetRepository;
     private final TrajetMapper trajetMapper;
+    private final ReservationRepository reservationRepository;
 
     public TrajetServiceImpl(
             ConducteurRepository conducteurRepository,
-            VehiculeRepository vehiculeRepository, Clock clock, TrajetRepository trajetRepository, TrajetMapper trajetMapper) {
+            VehiculeRepository vehiculeRepository,
+            Clock clock,
+            TrajetRepository trajetRepository,
+            TrajetMapper trajetMapper,
+            ReservationRepository reservationRepository, ReservationRepository reservationRepository1) {
 
         this.conducteurRepository = conducteurRepository;
         this.vehiculeRepository = vehiculeRepository;
         this.clock = clock;
         this.trajetRepository = trajetRepository;
         this.trajetMapper = trajetMapper;
+        this.reservationRepository = reservationRepository1;
     }
 
     @Override
@@ -224,4 +232,38 @@ public class TrajetServiceImpl implements TrajetService {
 
 
     }
+
+
+    @Override
+    @Transactional(readOnly = true)
+    public TrajetResponse trouverParId(Long trajetId) {
+
+        // 1. Récupérer le trajet avec ses points d'arrêt
+        Trajet trajet = trajetRepository
+                .findDetailById(trajetId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Trajet introuvable : " + trajetId
+                        )
+                );
+
+        // R-25 : total des places réservées confirmées
+        Long placesReservees =
+                reservationRepository.sumPlacesByTrajetIdAndStatut(
+                        trajetId,
+                        StatutReservation.CONFIRMEE
+                );
+
+        // R-33 : les places restantes sont calculées
+        int placesRestantes =
+                trajet.getPlacesProposees()
+                        - Math.toIntExact(placesReservees);
+
+        // Conversion Entité -> DTO
+        return trajetMapper.toResponse(
+                trajet,
+                placesRestantes
+        );
+    }
+
 }

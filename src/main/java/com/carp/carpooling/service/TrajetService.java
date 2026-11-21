@@ -10,4 +10,6 @@ public interface TrajetService {
             Long conducteurId,
             TrajetCreateRequest request
     );
+
+    TrajetResponse trouverParId(Long trajetId);
 }
