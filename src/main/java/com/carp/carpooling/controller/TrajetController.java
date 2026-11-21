@@ -33,4 +33,16 @@ public class TrajetController {
                 .status(HttpStatus.CREATED)
                 .body(response);
     }
+
+
+    @GetMapping("/{id}")
+    public ResponseEntity<TrajetResponse> trouverParId(
+            @PathVariable Long id) {
+
+        TrajetResponse response =
+                trajetService.trouverParId(id);
+
+        return ResponseEntity.ok(response);
+    }
+
 }
