@@ -4,11 +4,13 @@ package com.carp.carpooling.service.impl;
 import com.carp.carpooling.dto.trajet.PointArretRequest;
 import com.carp.carpooling.dto.trajet.TrajetCreateRequest;
 import com.carp.carpooling.dto.trajet.TrajetResponse;
+import com.carp.carpooling.dto.trajet.TrajetSearchResponse;
 import com.carp.carpooling.entity.Conducteur;
 import com.carp.carpooling.entity.PointArret;
 import com.carp.carpooling.entity.Trajet;
 import com.carp.carpooling.entity.Vehicule;
 import com.carp.carpooling.entity.enums.StatutReservation;
+import com.carp.carpooling.entity.enums.StatutTrajet;
 import com.carp.carpooling.exception.ForbiddenOperationException;
 import com.carp.carpooling.exception.InvalidTrajetException;
 import com.carp.carpooling.exception.ResourceNotFoundException;
@@ -21,9 +23,13 @@ import com.carp.carpooling.service.TrajetService;
 
 import java.math.RoundingMode;
 import java.time.Clock;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.math.BigDecimal;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -48,14 +54,14 @@ public class TrajetServiceImpl implements TrajetService {
             Clock clock,
             TrajetRepository trajetRepository,
             TrajetMapper trajetMapper,
-            ReservationRepository reservationRepository, ReservationRepository reservationRepository1) {
+            ReservationRepository reservationRepository) {
 
         this.conducteurRepository = conducteurRepository;
         this.vehiculeRepository = vehiculeRepository;
         this.clock = clock;
         this.trajetRepository = trajetRepository;
         this.trajetMapper = trajetMapper;
-        this.reservationRepository = reservationRepository1;
+        this.reservationRepository = reservationRepository;
     }
 
     @Override
@@ -265,5 +271,83 @@ public class TrajetServiceImpl implements TrajetService {
                 placesRestantes
         );
     }
+
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<TrajetSearchResponse> searchTrips(
+            String departureCity,
+            String arrivalCity,
+            LocalDate date,
+            Integer seats,
+            BigDecimal maxPrice,
+            int page,
+            int size
+    ) {
+
+        // Validation des villes
+        if (departureCity == null || departureCity.isBlank()
+                || arrivalCity == null || arrivalCity.isBlank()) {
+
+            throw new IllegalArgumentException(
+                    "Les villes de d'part et d arrive sont obligatoires"
+            );
+        }
+
+        // Validation de la date
+        if (date == null) {
+            throw new IllegalArgumentException(
+                    "La date de recherche est obligatoire"
+            );
+        }
+
+        // Validation du nombre de places
+        if (seats == null || seats < 1) {
+            throw new IllegalArgumentException(
+                    "Le nombre de places doit être supérieur ou égal à 1"
+            );
+        }
+
+        // Validation du prix maximal
+        if (maxPrice != null
+                && maxPrice.compareTo(BigDecimal.ZERO) < 0) {
+
+            throw new IllegalArgumentException(
+                    "Le prix maximal ne peut pas être négatif"
+            );
+        }
+
+        // Validation de la pagination
+        if (page < 0 || size < 1 || size > 50) {
+            throw new IllegalArgumentException(
+                    "Pagination invalide : page >= 0 et size entre 1 et 50"
+            );
+        }
+
+        // Normalisation des villes
+        String villeMontee = departureCity.trim();
+        String villeDescente = arrivalCity.trim();
+
+        // Definir la journee recherchee
+        LocalDateTime debutJour = date.atStartOfDay();
+        LocalDateTime finJour = date.plusDays(1).atStartOfDay();
+
+        // Creer la pagination
+        Pageable pageable = PageRequest.of(page, size);
+
+        // Exécuter la recherche
+        return trajetRepository.searchTrips(
+                villeMontee,
+                villeDescente,
+                StatutTrajet.PUBLIE,
+                debutJour,
+                finJour,
+                StatutReservation.CONFIRMEE,
+                seats,
+                maxPrice,
+                pageable
+        );
+    }
+
 
 }
