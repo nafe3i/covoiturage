@@ -37,4 +37,14 @@ public interface ReservationRepository
             @Param("statut") StatutReservation statut
     );
 
+    @Query("""
+            select count(r)>0 from Reservation r join r.passager p join r.trajet t where p.id= :passagerId and t.id = :trajetId and r.statut = :status
+            """)
+    boolean existsByPassagerIdAndTrajetIdAndStatut(
+            @Param("passagerId") Long passagerId,
+            @Param("trajetId") Long trajetId,
+            @Param("status") StatutReservation statut
+    );
+
+
 }
