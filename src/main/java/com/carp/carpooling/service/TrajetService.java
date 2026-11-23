@@ -31,4 +31,6 @@ public interface TrajetService {
 
     void terminer(Long trajetId, Long conducteurId);
 
+    void annuler(Long trajetId, Long conducteurId);
+
 }

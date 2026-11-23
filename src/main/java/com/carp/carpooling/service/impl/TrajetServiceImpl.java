@@ -5,10 +5,7 @@ import com.carp.carpooling.dto.trajet.PointArretRequest;
 import com.carp.carpooling.dto.trajet.TrajetCreateRequest;
 import com.carp.carpooling.dto.trajet.TrajetResponse;
 import com.carp.carpooling.dto.trajet.TrajetSearchResponse;
-import com.carp.carpooling.entity.Conducteur;
-import com.carp.carpooling.entity.PointArret;
-import com.carp.carpooling.entity.Trajet;
-import com.carp.carpooling.entity.Vehicule;
+import com.carp.carpooling.entity.*;
 import com.carp.carpooling.entity.enums.StatutReservation;
 import com.carp.carpooling.entity.enums.StatutTrajet;
 import com.carp.carpooling.exception.BusinessConflictException;
@@ -34,10 +31,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashSet;
-import java.util.Locale;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 @Service
 public class TrajetServiceImpl implements TrajetService {
@@ -384,6 +378,48 @@ public class TrajetServiceImpl implements TrajetService {
         }
 
         trajet.terminer();
+    }
+
+
+    @Override
+    @Transactional
+    public void annuler(Long trajetId, Long conducteurId) {
+
+        Trajet trajet = trajetRepository.findById(trajetId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Trajet introuvable : " + trajetId
+                        )
+                );
+
+        if (!Objects.equals(
+                trajet.getConducteur().getId(),
+                conducteurId
+        )) {
+            throw new ForbiddenOperationException(
+                    "Ce trajet n appartient pas au conducteur"
+            );
+        }
+
+        if (trajet.getStatut() != StatutTrajet.PUBLIE
+                && trajet.getStatut() != StatutTrajet.COMPLET) {
+
+            throw new BusinessConflictException(
+                    "Seul un trajet publie ou complet peut etre annule"
+            );
+        }
+
+        List<Reservation> reservations =
+                reservationRepository.findByTrajetIdAndStatut(
+                        trajetId,
+                        StatutReservation.CONFIRMEE
+                );
+
+        for (Reservation reservation : reservations) {
+            reservation.annuler();
+        }
+
+        trajet.annuler();
     }
 
 

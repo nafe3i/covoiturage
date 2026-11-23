@@ -57,4 +57,6 @@ public interface ReservationRepository
             @Param("reservationId") Long reservationId
     );
 
+    List<Reservation> findByTrajetIdAndStatut(Long trajetId, StatutReservation statut);
+
 }
