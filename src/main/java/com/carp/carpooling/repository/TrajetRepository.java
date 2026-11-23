@@ -9,8 +9,7 @@ import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import com.carp.carpooling.dto.trajet.TrajetSearchResponse;
-import com.carp.carpooling.entity.enums.StatutTrajet;
-import com.carp.carpooling.entity.enums.StatutReservation;
+
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -18,9 +17,7 @@ import org.springframework.data.domain.Pageable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.List;
+
 import java.util.Optional;
 
 public interface TrajetRepository extends JpaRepository<Trajet, Long> {
