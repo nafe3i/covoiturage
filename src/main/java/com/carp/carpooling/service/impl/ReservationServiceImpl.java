@@ -10,6 +10,7 @@ import com.carp.carpooling.entity.Trajet;
 import com.carp.carpooling.entity.enums.StatutReservation;
 import com.carp.carpooling.entity.enums.StatutTrajet;
 import com.carp.carpooling.exception.BusinessConflictException;
+import com.carp.carpooling.exception.ForbiddenOperationException;
 import com.carp.carpooling.exception.ResourceNotFoundException;
 import com.carp.carpooling.mapper.ReservationMapper;
 import com.carp.carpooling.repository.PassagerRepository;
@@ -21,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Clock;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
@@ -37,7 +39,8 @@ public class ReservationServiceImpl implements ReservationService {
             PassagerRepository passagerRepository,
             TrajetRepository trajetRepository,
             ReservationRepository reservationRepository,
-            Clock clock, ReservationMapper reservationMapper
+            Clock clock,
+            ReservationMapper reservationMapper
     ) {
         this.passagerRepository = passagerRepository;
         this.trajetRepository = trajetRepository;
@@ -175,4 +178,76 @@ public class ReservationServiceImpl implements ReservationService {
                 placesRestantes
         );
     }
+
+
+    @Override
+    @Transactional
+    public void annuler(Long reservationId, Long passagerId) {
+
+        // 1. Identifier le trajet sans charger la réservation
+        Long trajetId = reservationRepository
+                .findTrajetIdByReservationId(reservationId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Réservation introuvable : " + reservationId
+                        )
+                );
+
+        // 2. Verrouiller le trajet
+        Trajet trajet = trajetRepository
+                .findById(trajetId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Trajet introuvable : " + trajetId
+                        )
+                );
+
+        // 3. Charger la réservation après le verrou
+        Reservation reservation = reservationRepository
+                .findById(reservationId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Réservation introuvable : " + reservationId
+                        )
+                );
+
+        // 4. Vérifier le propriétaire
+        if (!Objects.equals(
+                reservation.getPassager().getId(),
+                passagerId
+        )) {
+            throw new ForbiddenOperationException(
+                    "Cette réservation n'appartient pas au passager"
+            );
+        }
+
+        // 5. Vérifier le statut de la réservation
+        if (reservation.getStatut() != StatutReservation.CONFIRMEE) {
+            throw new BusinessConflictException(
+                    "Cette réservation est déjà annulée"
+            );
+        }
+
+        // 6. Vérifier le délai de 24 heures
+        LocalDateTime maintenant = LocalDateTime.now(clock);
+
+        LocalDateTime dateLimiteAnnulation =
+                trajet.getDateDepart().minusHours(24);
+
+        if (maintenant.isAfter(dateLimiteAnnulation)) {
+            throw new BusinessConflictException(
+                    "Annulation impossible : délai de 24 heures dépassé"
+            );
+        }
+
+        // 7. Annuler la réservation
+        reservation.annuler();
+
+        // 8. Rouvrir le trajet si nécessaire
+        if (trajet.getStatut() == StatutTrajet.COMPLET) {
+            trajet.reouvrirApresAnnulation();
+        }
+    }
+
+
 }

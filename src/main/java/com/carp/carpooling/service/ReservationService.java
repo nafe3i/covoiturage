@@ -10,4 +10,6 @@ public interface ReservationService {
             Long passagerId,
             ReservationCreateRequest request
     );
+
+    void annuler(Long reservationId, Long passagerId);
 }
