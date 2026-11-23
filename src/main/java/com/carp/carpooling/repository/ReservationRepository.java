@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface ReservationRepository
         extends JpaRepository<Reservation, Long> {
@@ -46,5 +47,14 @@ public interface ReservationRepository
             @Param("status") StatutReservation statut
     );
 
+
+    @Query("""
+            SELECT r.trajet.id
+            FROM Reservation r
+            WHERE r.id = :reservationId
+            """)
+    Optional<Long> findTrajetIdByReservationId(
+            @Param("reservationId") Long reservationId
+    );
 
 }

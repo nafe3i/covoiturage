@@ -1,9 +1,9 @@
-
 package com.carp.carpooling.entity;
 
 import com.carp.carpooling.entity.enums.StatutReservation;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -69,8 +69,7 @@ public class Reservation {
         this.trajet = Objects.requireNonNull(trajet);
         this.pointMontee = Objects.requireNonNull(pointMontee);
         this.pointDescente = Objects.requireNonNull(pointDescente);
-        this.dateReservation =
-                Objects.requireNonNull(dateReservation);
+        this.dateReservation = Objects.requireNonNull(dateReservation);
 
         if (nombrePlaces == null || nombrePlaces < 1) {
             throw new IllegalArgumentException(
