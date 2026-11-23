@@ -39,4 +39,17 @@ public class ReservationController {
                 ))
                 .body(response);
     }
+
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> annuler(
+            @PathVariable Long id,
+            @RequestHeader("X-Passenger-Id") Long passagerId
+    ) {
+
+        reservationService.annuler(id, passagerId);
+
+        return ResponseEntity.noContent().build();
+    }
+
 }
