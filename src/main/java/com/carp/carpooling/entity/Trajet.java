@@ -88,4 +88,14 @@ public class Trajet {
     public List<PointArret> getPointsArret() {
         return Collections.unmodifiableList(pointsArret);
     }
+
+    public void marquerComplet() {
+        if (statut != StatutTrajet.PUBLIE) {
+            throw new IllegalStateException(
+                    "Seul un trajet publie peut devenir complet"
+            );
+        }
+
+        this.statut = StatutTrajet.COMPLET;
+    }
 }

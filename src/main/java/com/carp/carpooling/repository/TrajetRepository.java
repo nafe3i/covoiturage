@@ -3,7 +3,9 @@ package com.carp.carpooling.repository;
 import com.carp.carpooling.entity.Trajet;
 import com.carp.carpooling.entity.enums.StatutReservation;
 import com.carp.carpooling.entity.enums.StatutTrajet;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import com.carp.carpooling.dto.trajet.TrajetSearchResponse;
@@ -115,4 +117,20 @@ public interface TrajetRepository extends JpaRepository<Trajet, Long> {
             @Param("maxPrice") BigDecimal maxPrice,
             Pageable pageable
     );
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    Optional<Trajet> findById(Long id);
+
+//    @Query("""
+//            SELECT CASE WHEN COUNT(p) > 0 THEN true ELSE false END
+//            FROM Trajet t
+//            JOIN t.pointsArret p
+//            WHERE t.id = :trajetId
+//              AND p.id = :pointId
+//            """)
+//    boolean existsPointArretInTrajet(
+//            @Param("trajetId") Long trajetId,
+//            @Param("pointId") Long pointId
+//    );
+
 }
