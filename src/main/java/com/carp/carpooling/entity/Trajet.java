@@ -111,4 +111,33 @@ public class Trajet {
         this.statut = StatutTrajet.PUBLIE;
     }
 
+
+    public void terminer() {
+
+        if (statut != StatutTrajet.PUBLIE
+                && statut != StatutTrajet.COMPLET) {
+
+            throw new IllegalStateException(
+                    "Seul un trajet publie ou complet peut etre termine"
+            );
+        }
+
+        this.statut = StatutTrajet.TERMINE;
+    }
+
+
+    public void annuler() {
+
+        if (statut != StatutTrajet.PUBLIE
+                && statut != StatutTrajet.COMPLET) {
+
+            throw new IllegalStateException(
+                    "Seul un trajet publié ou complet peut être annulé"
+            );
+        }
+
+        this.statut = StatutTrajet.ANNULE;
+    }
+
+
 }

@@ -29,4 +29,6 @@ public interface TrajetService {
             int size
     );
 
+    void terminer(Long trajetId, Long conducteurId);
+
 }

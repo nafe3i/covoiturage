@@ -11,6 +11,7 @@ import com.carp.carpooling.entity.Trajet;
 import com.carp.carpooling.entity.Vehicule;
 import com.carp.carpooling.entity.enums.StatutReservation;
 import com.carp.carpooling.entity.enums.StatutTrajet;
+import com.carp.carpooling.exception.BusinessConflictException;
 import com.carp.carpooling.exception.ForbiddenOperationException;
 import com.carp.carpooling.exception.InvalidTrajetException;
 import com.carp.carpooling.exception.ResourceNotFoundException;
@@ -244,7 +245,6 @@ public class TrajetServiceImpl implements TrajetService {
     @Transactional(readOnly = true)
     public TrajetResponse trouverParId(Long trajetId) {
 
-        // 1. Récupérer le trajet avec ses points d'arrêt
         Trajet trajet = trajetRepository
                 .findDetailById(trajetId)
                 .orElseThrow(() ->
@@ -253,19 +253,16 @@ public class TrajetServiceImpl implements TrajetService {
                         )
                 );
 
-        // R-25 : total des places réservées confirmées
         Long placesReservees =
                 reservationRepository.sumPlacesByTrajetIdAndStatut(
                         trajetId,
                         StatutReservation.CONFIRMEE
                 );
 
-        // R-33 : les places restantes sont calculées
         int placesRestantes =
                 trajet.getPlacesProposees()
                         - Math.toIntExact(placesReservees);
 
-        // Conversion Entité -> DTO
         return trajetMapper.toResponse(
                 trajet,
                 placesRestantes
@@ -347,6 +344,46 @@ public class TrajetServiceImpl implements TrajetService {
                 maxPrice,
                 pageable
         );
+    }
+
+
+    @Override
+    @Transactional
+    public void terminer(Long trajetId, Long conducteurId) {
+
+        Trajet trajet = trajetRepository.findById(trajetId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Trajet introuvable : " + trajetId
+                        )
+                );
+
+        if (!Objects.equals(
+                trajet.getConducteur().getId(),
+                conducteurId
+        )) {
+            throw new ForbiddenOperationException(
+                    "Ce trajet n'appartient pas au conducteur"
+            );
+        }
+
+        if (trajet.getStatut() != StatutTrajet.PUBLIE
+                && trajet.getStatut() != StatutTrajet.COMPLET) {
+
+            throw new BusinessConflictException(
+                    "Ce trajet ne peut plus être terminé"
+            );
+        }
+
+        LocalDateTime maintenant = LocalDateTime.now(clock);
+
+        if (!maintenant.isAfter(trajet.getDateDepart())) {
+            throw new BusinessConflictException(
+                    "Impossible de terminer un trajet avant son départ"
+            );
+        }
+
+        trajet.terminer();
     }
 
 

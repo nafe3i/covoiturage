@@ -93,4 +93,15 @@ public class TrajetController {
     }
 
 
+    @PatchMapping("/{id}/finish")
+    public ResponseEntity<Void> terminer(
+            @PathVariable Long id,
+            @RequestHeader("X-Driver-Id") Long conducteurId
+    ) {
+
+        trajetService.terminer(id, conducteurId);
+
+        return ResponseEntity.noContent().build();
+    }
+
 }
