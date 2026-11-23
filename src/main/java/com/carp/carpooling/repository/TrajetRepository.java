@@ -118,6 +118,18 @@ public interface TrajetRepository extends JpaRepository<Trajet, Long> {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     Optional<Trajet> findById(Long id);
 
+    boolean existsByVehicule_Id(Long vehiculeId);
+
+
+    @Query("""
+            SELECT t.conducteur.id
+            FROM Trajet t
+            WHERE t.id = :trajetId
+            """)
+    Optional<Long> findConducteurIdByTrajetId(
+            @Param("trajetId") Long trajetId
+    );
+
 //    @Query("""
 //            SELECT CASE WHEN COUNT(p) > 0 THEN true ELSE false END
 //            FROM Trajet t

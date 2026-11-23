@@ -1,6 +1,7 @@
 
 package com.carp.carpooling.service.impl;
 
+import com.carp.carpooling.dto.reservation.ReservationConducteurResponse;
 import com.carp.carpooling.dto.reservation.ReservationCreateRequest;
 import com.carp.carpooling.dto.reservation.ReservationResponse;
 import com.carp.carpooling.entity.Passager;
@@ -24,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Objects;
 
 @Service
@@ -247,6 +249,39 @@ public class ReservationServiceImpl implements ReservationService {
         if (trajet.getStatut() == StatutTrajet.COMPLET) {
             trajet.reouvrirApresAnnulation();
         }
+
+    }
+
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ReservationConducteurResponse> consulterReservationsTrajet(
+            Long trajetId,
+            Long conducteurId
+    ) {
+
+        // 1. Vérifier que le trajet existe et retrouver son propriétaire
+        Long proprietaireId = trajetRepository
+                .findConducteurIdByTrajetId(trajetId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Trajet introuvable : " + trajetId
+                        )
+                );
+
+        // 2. Vérifier que le conducteur est propriétaire du trajet
+        if (!Objects.equals(proprietaireId, conducteurId)) {
+            throw new ForbiddenOperationException(
+                    "Vous ne pouvez consulter que les reservations de vos trajets"
+            );
+        }
+
+        // 3. Récupérer les réservations confirmées et annulées
+        return reservationRepository
+                .findAllDetailsByTrajetId(trajetId)
+                .stream()
+                .map(reservationMapper::toConducteurResponse)
+                .toList();
     }
 
 
