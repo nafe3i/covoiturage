@@ -4,10 +4,11 @@ import com.carp.carpooling.dto.reservation.ReservationResponse;
 import com.carp.carpooling.entity.Reservation;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import com.carp.carpooling.dto.reservation.ReservationConducteurResponse;
 
 @Mapper(componentModel = "spring")
 public interface ReservationMapper {
-    @Mapping(target = "id",source = "reservation.id")
+    @Mapping(target = "id", source = "reservation.id")
     @Mapping(target = "passagerId", source = "reservation.passager.id")
     @Mapping(target = "trajetId", source = "reservation.trajet.id")
     @Mapping(target = "pointMonteeId", source = "reservation.pointMontee.id")
@@ -21,5 +22,16 @@ public interface ReservationMapper {
             Reservation reservation,
             Integer placesRestantes
     );
+
+
+    @Mapping(target = "passagerId", source = "passager.id")
+    @Mapping(target = "passagerNom", source = "passager.nom")
+    @Mapping(target = "passagerPrenom", source = "passager.prenom")
+    @Mapping(target = "villeMontee", source = "pointMontee.ville")
+    @Mapping(target = "villeDescente", source = "pointDescente.ville")
+    ReservationConducteurResponse toConducteurResponse(
+            Reservation reservation
+    );
+
 
 }

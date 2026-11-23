@@ -1,9 +1,11 @@
 
 package com.carp.carpooling.controller;
 
+import com.carp.carpooling.dto.reservation.ReservationConducteurResponse;
 import com.carp.carpooling.dto.trajet.TrajetCreateRequest;
 import com.carp.carpooling.dto.trajet.TrajetResponse;
 import com.carp.carpooling.dto.trajet.TrajetSearchResponse;
+import com.carp.carpooling.service.ReservationService;
 import com.carp.carpooling.service.TrajetService;
 
 import jakarta.validation.Valid;
@@ -15,15 +17,19 @@ import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/trips")
 public class TrajetController {
 
     private final TrajetService trajetService;
+    private final ReservationService reservationService;
 
-    public TrajetController(TrajetService trajetService) {
+
+    public TrajetController(TrajetService trajetService, ReservationService reservationService) {
         this.trajetService = trajetService;
+        this.reservationService = reservationService;
     }
 
     @PostMapping
@@ -115,6 +121,24 @@ public class TrajetController {
 
         return ResponseEntity.noContent().build();
     }
+
+
+    @GetMapping("/{id}/reservations")
+    public ResponseEntity<List<ReservationConducteurResponse>>
+    consulterReservations(
+            @PathVariable Long id,
+            @RequestHeader("X-Driver-Id") Long conducteurId
+    ) {
+
+        List<ReservationConducteurResponse> reservations =
+                reservationService.consulterReservationsTrajet(
+                        id,
+                        conducteurId
+                );
+
+        return ResponseEntity.ok(reservations);
+    }
+
 
 
 }

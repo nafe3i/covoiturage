@@ -11,6 +11,7 @@ import com.carp.carpooling.exception.ForbiddenOperationException;
 import com.carp.carpooling.exception.ResourceNotFoundException;
 import com.carp.carpooling.mapper.VehiculeMapper;
 import com.carp.carpooling.repository.ConducteurRepository;
+import com.carp.carpooling.repository.TrajetRepository;
 import com.carp.carpooling.repository.VehiculeRepository;
 import com.carp.carpooling.service.VehiculeService;
 
@@ -32,15 +33,18 @@ public class VehiculeServiceImpl implements VehiculeService {
     private final VehiculeRepository vehiculeRepository;
     private final ConducteurRepository conducteurRepository;
     private final VehiculeMapper vehiculeMapper;
+    private final TrajetRepository trajetRepository;
+
 
     public VehiculeServiceImpl(
             VehiculeRepository vehiculeRepository,
             ConducteurRepository conducteurRepository,
-            VehiculeMapper vehiculeMapper) {
+            VehiculeMapper vehiculeMapper, TrajetRepository trajetRepository) {
 
         this.vehiculeRepository = vehiculeRepository;
         this.conducteurRepository = conducteurRepository;
         this.vehiculeMapper = vehiculeMapper;
+        this.trajetRepository = trajetRepository;
     }
 
     @Override
@@ -183,6 +187,39 @@ public class VehiculeServiceImpl implements VehiculeService {
                 .map(vehiculeMapper::toResponse)
                 .toList();
     }
+
+
+    @Override
+    @Transactional
+    public void supprimer(Long vehiculeId, Long conducteurId) {
+
+        Vehicule vehicule = vehiculeRepository.findById(vehiculeId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Vehicule introuvable : " + vehiculeId
+                        )
+                );
+
+        if (!Objects.equals(
+                vehicule.getConducteur().getId(),
+                conducteurId
+        )) {
+            throw new ForbiddenOperationException(
+                    "Ce vehicule ne vous appartient pas"
+            );
+        }
+
+        if (trajetRepository.existsByVehicule_Id(vehiculeId)) {
+            throw new BusinessConflictException(
+                    "Impossible de supprimer un vehicule associe a un trajet"
+            );
+        }
+
+        vehiculeRepository.delete(vehicule);
+
+        log.info("Vehicule supprime : id={}", vehiculeId);
+    }
+
 
 
 }

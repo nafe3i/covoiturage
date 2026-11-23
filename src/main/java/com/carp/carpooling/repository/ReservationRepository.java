@@ -59,4 +59,21 @@ public interface ReservationRepository
 
     List<Reservation> findByTrajetIdAndStatut(Long trajetId, StatutReservation statut);
 
+
+
+    @Query("""
+    SELECT r
+    FROM Reservation r
+    JOIN FETCH r.passager
+    JOIN FETCH r.pointMontee
+    JOIN FETCH r.pointDescente
+    WHERE r.trajet.id = :trajetId
+    ORDER BY r.dateReservation DESC, r.id DESC
+    """)
+    List<Reservation> findAllDetailsByTrajetId(
+            @Param("trajetId") Long trajetId
+    );
+
+
+
 }

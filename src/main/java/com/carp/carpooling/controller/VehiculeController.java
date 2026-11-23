@@ -58,4 +58,17 @@ public class VehiculeController {
         return ResponseEntity.ok(response);
     }
 
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> supprimer(
+            @PathVariable Long id,
+            @RequestHeader("X-Driver-Id") Long conducteurId
+    ) {
+
+        vehiculeService.supprimer(id, conducteurId);
+
+        return ResponseEntity.noContent().build();
+    }
+
+
 }

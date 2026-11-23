@@ -24,6 +24,10 @@ public interface VehiculeService {
     List<VehiculeResponse> listerParConducteur(
             Long conducteurId
     );
+
+
+    void supprimer(Long vehiculeId, Long conducteurId);
+
 //
 //
 //    void supprimer(
