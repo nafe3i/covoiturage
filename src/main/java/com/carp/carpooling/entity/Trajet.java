@@ -98,4 +98,17 @@ public class Trajet {
 
         this.statut = StatutTrajet.COMPLET;
     }
+
+
+    public void reouvrirApresAnnulation() {
+
+        if (statut != StatutTrajet.COMPLET) {
+            throw new IllegalStateException(
+                    "Seul un trajet complet peut être rouvert"
+            );
+        }
+
+        this.statut = StatutTrajet.PUBLIE;
+    }
+
 }
